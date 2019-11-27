@@ -1,0 +1,13 @@
+[package]
+name = "image-codes"
+version = "0.1.0"
+authors = ["Nikolai Golub <nikolay.v.golub@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+actix-web = "1.0.8"
+serde = "1.0.101"
+barcoders = {version = "0.10.0", features = ["image",]}
+base64 = "0.10.1"
+qrcode = "0.11.0"
+image = "0.22.3"
