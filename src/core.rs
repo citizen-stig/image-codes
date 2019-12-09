@@ -5,6 +5,8 @@ extern crate qrcode;
 
 use barcoders::sym::code128::Code128;
 use barcoders::generators::image::Image as BarCodeImage;
+use imageproc::drawing::draw_text_mut;
+use rusttype::{FontCollection, Scale};
 use base64::encode;
 use image::Luma;
 use qrcode::QrCode;
@@ -26,10 +28,27 @@ pub fn encode_barcode128(payload: &str, height: u32) -> String {
     let mut img = image::DynamicImage::ImageRgba8(
         buffer.generate_buffer(&encoded[..]).unwrap()
     );
-    println!("Image width {:?} and height: {:?} {:?}", img.width(), img.height(), height);
     if img.width() < height {
         img = img.resize_exact(height * 3, height, FilterType::Nearest)
     }
+    let font = Vec::from(include_bytes!("DejaVuSans.ttf") as &[u8]);
+    let font = FontCollection::from_bytes(font)
+        .unwrap()
+        .into_font()
+        .unwrap();
+    let scale = Scale {
+        x: 20.0,
+        y: 20.0,
+    };
+    draw_text_mut(
+        &mut img,
+        image::Rgba([255u8, 255u8, 255u8, 0u8]),
+        0,
+        0,
+        scale,
+        &font,
+        payload,
+    );
     encode_as_base64(img, ImageOutputFormat::PNG)
 }
 

@@ -3,8 +3,14 @@ use std::fmt;
 use actix_web::{web, App, HttpServer, HttpResponse};
 use actix_web::http::StatusCode;
 use serde::{Deserialize, Serialize};
+use crate::Encoding::BarCode;
+use crate::encoder::Encoder;
+use base64::encode;
 
 mod core;
+mod encoder;
+mod barcode;
+mod qrcode;
 
 #[derive(Deserialize, Debug)]
 enum Encoding {
@@ -60,26 +66,28 @@ struct Params {
 
 
 fn index(info: web::Path<Info>, query: web::Query<Params>) -> HttpResponse {
+    let height = 300;
     let data = match info.encoding {
-        Encoding::BarCode => core::encode_barcode128(&query.payload.to_uppercase(), 300),
-        Encoding::QRCode => core::encode_qrcode(&query.payload, 500),
-        _ => "NOT SUPPORTED YET".to_owned(),
+        Encoding::BarCode => {
+            let code = barcode::BarCode::new(query.payload.clone());
+            code.output()
+        },
+        Encoding::QRCode => {
+            let code = qrcode::QRCode::new(query.payload.clone());
+            code.output()
+        },
+        _ => panic!("Not supported yet!!!"),
     };
+
+    let result = encode(&data[..]);
 
     // response
     HttpResponse::build(StatusCode::OK)
         .content_type("text/html; charset=utf-8")
-        .body(format!("<p>Welcome!</p><img src=\"data:image/png;base64, {}\"/>", &data))
+        .body(format!("<p>Welcome!</p><img src=\"data:image/png;base64, {}\"/>", result))
 }
 
-//fn encode_message(message: web::Json<InputMessage>) -> Result<HttpResponse> {
-//    let data = match message.encoding {
-//        Encoding::Code128 => core::encode_barcode128(&message.payload, 300),
-//        Encoding::QRCode => core::encode_qrcode(&message.payload, 300),
-//        _ => String::from("NOT SUPPORTED YET"),
-//    };
-//    Ok(HttpResponse::Ok().json(OutputMessage { data }))
-//}
+
 
 
 fn main() {
