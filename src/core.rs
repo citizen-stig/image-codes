@@ -8,32 +8,37 @@ use barcoders::generators::image::Image as BarCodeImage;
 use base64::encode;
 use image::Luma;
 use qrcode::QrCode;
-use image::{ImageBuffer, DynamicImage, Rgba};
+use image::{DynamicImage, ImageOutputFormat, FilterType, GenericImageView};
 
-pub fn encode_barcode128(payload: &str) -> String {
-    let data = "À".to_owned() + payload;
-    println!("Going to encode: {:?}", data);
-    let barcode = Code128::new(data).unwrap();
-    let encoded = barcode.encode();
-    let buffer = BarCodeImage::image_buffer(100);
-    let img = image::DynamicImage::ImageRgba8(
-        buffer.generate_buffer(&encoded[..]).unwrap()
-    );
-    let mut output_image_bytes = Vec::new();
-    img.write_to(&mut output_image_bytes, image::ImageOutputFormat::PNG)
-        .expect("Unable to write");
+fn encode_as_base64(image_object: DynamicImage, format: ImageOutputFormat) -> String {
+    let mut output_image_bytes: Vec<u8> = Vec::new();
+    image_object.write_to(&mut output_image_bytes, format).expect("Unable to write image");
     encode(&output_image_bytes[..])
 }
 
-pub fn encode_qrcode(payload: &str) -> String {
-    let code = QrCode::new(payload.as_bytes()).unwrap();
-    let renderer = code.render::<Luma<u8>>();
-    let img = image::DynamicImage::ImageLuma8(renderer.build());
-    let mut buf = Vec::new();
-    img.write_to(&mut buf, image::ImageOutputFormat::PNG)
-        .expect("Unable to write");
+pub fn encode_barcode128(payload: &str, height: u32) -> String {
+    let data = "À".to_owned() + payload;
+    println!("Going to encode: {:?}", data);
 
-    encode(&buf[..])
+    let barcode = Code128::new(data).unwrap();
+    let encoded = barcode.encode();
+    let buffer = BarCodeImage::image_buffer(height);
+    let mut img = image::DynamicImage::ImageRgba8(
+        buffer.generate_buffer(&encoded[..]).unwrap()
+    );
+    println!("Image width {:?} and height: {:?} {:?}", img.width(), img.height(), height);
+    if img.width() < height {
+        img = img.resize_exact(height * 3, height, FilterType::Nearest)
+    }
+    encode_as_base64(img, ImageOutputFormat::PNG)
+}
+
+pub fn encode_qrcode(payload: &str, height: u32) -> String {
+    let code = QrCode::new(payload.as_bytes()).unwrap();
+    let mut renderer = code.render::<Luma<u8>>();
+    renderer.min_dimensions(height, height);
+    let img = image::DynamicImage::ImageLuma8(renderer.build());
+    encode_as_base64(img, ImageOutputFormat::PNG)
 }
 
 #[cfg(test)]

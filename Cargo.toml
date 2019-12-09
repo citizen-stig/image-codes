@@ -5,8 +5,8 @@ authors = ["Nikolai Golub <nikolay.v.golub@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-actix-web = "1.0.8"
-serde = "1.0.101"
+actix-web = "1.0"
+serde = "1.0"
 barcoders = {version = "1.0.1", features = ["image",]}
 base64 = "0.10.1"
 qrcode = "0.11.0"
