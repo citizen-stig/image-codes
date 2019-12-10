@@ -1,6 +1,8 @@
-use image::{DynamicImage, ImageOutputFormat};
+use image::{DynamicImage, ImageOutputFormat, GenericImageView};
+use image::imageops::overlay;
 use imageproc::drawing::draw_text_mut;
 use rusttype::{FontCollection, Scale};
+use test::TestFn::DynBenchFn;
 
 pub struct OutputParams {
     pub format: ImageOutputFormat,
@@ -20,15 +22,19 @@ pub trait Encoder {
             .unwrap()
             .into_font()
             .unwrap();
-        let scale = Scale {
-            x: 20.0,
-            y: 20.0,
-        };
+        let (img_height, img_width) = (img.height(), img.width());
+        let font_size: f32 = img_height as f32 * 0.2;
+        let scale = Scale { x: font_size, y: font_size };
+
+
+        let x = 0;
+        let y = img.height() - (font_size as u32);
+
         draw_text_mut(
             img,
             image::Rgba([0u8, 0u8, 0u8, 0u8]),
             0,
-            0,
+            y,
             scale,
             &font,
             self.payload(),
