@@ -1,8 +1,7 @@
 use image::{DynamicImage, ImageOutputFormat, GenericImageView};
-use image::imageops::overlay;
+//use image::imageops::overlay;
 use imageproc::drawing::draw_text_mut;
 use rusttype::{FontCollection, Scale};
-use test::TestFn::DynBenchFn;
 
 pub struct OutputParams {
     pub format: ImageOutputFormat,
