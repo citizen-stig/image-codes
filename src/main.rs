@@ -30,57 +30,10 @@ impl fmt::Display for Encoding {
     }
 }
 
-#[derive(Deserialize)]
-struct InputMessage {
-    payload: String,
-    encoding: Encoding,
-}
-
-#[derive(Deserialize, Serialize)]
-struct OutputMessage {
-    data: String,
-}
-
-#[derive(Deserialize, Serialize, Debug)]
-enum ImageOutputFormat {
-    PNG,
-    JPEG,
-    GIF,
-}
-
-impl Default for ImageOutputFormat {
-    fn default() -> Self {
-        ImageOutputFormat::PNG
-    }
-}
-
 #[derive(Deserialize, Serialize, Debug)]
 struct Params {
     payload: String,
-
-    #[serde(default)]
-    image_type: ImageOutputFormat,
 }
-
-// fn process_response<T: Encode>(code: T, is_base64: bool) -> HttpResponse {
-//     let data = code.output();
-//
-//     if is_base64 {
-//         let result = encode(&data[..]);
-//
-//         // response
-//         HttpResponse::build(StatusCode::OK)
-//             .content_type("text/html; charset=utf-8")
-//             .body(format!(
-//                 "<p>Welcome!</p><img src=\"data:image/png;base64, {}\"/>",
-//                 result
-//             ))
-//     } else {
-//         HttpResponse::build(StatusCode::OK)
-//             .content_type("image/png")
-//             .body(data)
-//     }
-// }
 
 fn process_request(encoding: &Encoding, payload: String, height: u32) -> Box<dyn Encode> {
     match encoding {
@@ -97,7 +50,6 @@ fn index(info: web::Path<Info>, query: web::Query<Params>) -> HttpResponse {
 
     let result = encode(&data[..]);
 
-    // response
     HttpResponse::build(StatusCode::OK)
         .content_type("text/html; charset=utf-8")
         .body(format!(

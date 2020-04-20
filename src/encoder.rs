@@ -14,7 +14,7 @@ pub trait Encode {
 
     fn output(&self) -> Vec<u8> {
         let params = self.get_params();
-        let mut img = self.encode();
+        let img = self.encode();
 
         let mut output_image_bytes: Vec<u8> = Vec::new();
         img.write_to(&mut output_image_bytes, params.format)
