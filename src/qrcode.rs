@@ -1,8 +1,6 @@
-use crate::encoder::{Encoder, OutputParams};
+use crate::encoder::{Encode, OutputParams};
 use image::{DynamicImage, ImageOutputFormat, Luma};
 use qrcode::QrCode;
-
-
 
 pub struct QRCode {
     height: u32,
@@ -11,11 +9,14 @@ pub struct QRCode {
 
 impl QRCode {
     pub fn new(payload: String) -> Self {
-        QRCode { payload, height: 300 }
+        QRCode {
+            payload,
+            height: 300,
+        }
     }
 }
 
-impl Encoder for QRCode {
+impl Encode for QRCode {
     fn encode(&self) -> DynamicImage {
         let code = QrCode::new(self.payload.as_bytes()).unwrap();
         let mut renderer = code.render::<Luma<u8>>();
@@ -27,7 +28,7 @@ impl Encoder for QRCode {
         &self.payload
     }
 
-    fn params(&self) -> OutputParams {
+    fn get_params(&self) -> OutputParams {
         OutputParams {
             format: ImageOutputFormat::PNG,
             append_text: true,
