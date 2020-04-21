@@ -33,19 +33,24 @@ impl fmt::Display for Encoding {
 #[derive(Deserialize, Serialize, Debug)]
 struct Params {
     payload: String,
+    #[serde(default = "default_height")]
+    height: u32,
+}
+
+fn default_height() -> u32 {
+    300
 }
 
 fn process_request(encoding: &Encoding, payload: String, height: u32) -> Box<dyn Encode> {
     match encoding {
         Encoding::BarCode => Box::new(barcode::BarCode::new(payload, height)),
-        Encoding::QRCode => Box::new(qrcode::QRCode::new(payload)),
+        Encoding::QRCode => Box::new(qrcode::QRCode::new(payload, height)),
         _ => panic!("Not supported yet!!!"),
     }
 }
 
 fn index(info: web::Path<Info>, query: web::Query<Params>) -> HttpResponse {
-    let height = 300;
-    let code = process_request(&info.encoding, query.payload.clone(), height);
+    let code = process_request(&info.encoding, query.payload.clone(), query.height);
     let data = code.output();
 
     let result = encode(&data[..]);
