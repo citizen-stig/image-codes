@@ -1,6 +1,7 @@
-use crate::encoder::{Encode, OutputParams};
 use image::{DynamicImage, ImageOutputFormat, Luma};
 use qrcode::QrCode;
+
+use crate::encoder::{Encode, OutputParams};
 
 pub struct QRCode {
     height: u32,
@@ -14,11 +15,16 @@ impl QRCode {
 }
 
 impl Encode for QRCode {
-    fn encode(&self) -> DynamicImage {
-        let code = QrCode::new(self.payload.as_bytes()).unwrap();
-        let mut renderer = code.render::<Luma<u8>>();
-        renderer.min_dimensions(self.height, self.height);
-        image::DynamicImage::ImageLuma8(renderer.build())
+    fn encode(&self) -> Result<DynamicImage, String> {
+        let code = QrCode::new(self.payload.as_bytes());
+        match code {
+            Ok(code) => {
+                let mut renderer = code.render::<Luma<u8>>();
+                renderer.min_dimensions(self.height, self.height);
+                Ok(image::DynamicImage::ImageLuma8(renderer.build()))
+            }
+            Err(error) => Err(error.to_string()),
+        }
     }
 
     fn payload(&self) -> &str {
@@ -40,7 +46,7 @@ mod tests {
     #[test]
     fn test_encode() {
         let qrcode = QRCode::new("a".to_owned(), 10);
-        let image = qrcode.encode();
+        let image = qrcode.encode().unwrap();
         let expected_bytes = vec![
             255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
             255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,

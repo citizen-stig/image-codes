@@ -51,16 +51,21 @@ fn process_request(encoding: &Encoding, payload: String, height: u32) -> Box<dyn
 
 fn index(info: web::Path<Info>, query: web::Query<Params>) -> HttpResponse {
     let code = process_request(&info.encoding, query.payload.clone(), query.height);
-    let data = code.output();
 
-    let result = encode(&data[..]);
-
-    HttpResponse::build(StatusCode::OK)
-        .content_type("text/html; charset=utf-8")
-        .body(format!(
-            "<p>Welcome!</p><img src=\"data:image/png;base64, {}\"/>",
-            result
-        ))
+    match code.output() {
+        Ok(data) => {
+            let result = encode(&data[..]);
+            HttpResponse::build(StatusCode::OK)
+                .content_type("text/html; charset=utf-8")
+                .body(format!(
+                    "<p>Welcome!</p><img src=\"data:image/png;base64, {}\"/>",
+                    result
+                ))
+        }
+        Err(error) => HttpResponse::build(StatusCode::BAD_REQUEST)
+            .content_type("text/html; charset=utf-8")
+            .body(format!("<p>Error!</p><p>{}<p/>", error)),
+    }
 }
 
 fn main() {

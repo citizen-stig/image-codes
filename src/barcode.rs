@@ -6,6 +6,7 @@ use barcoders::sym::code128::Code128;
 use image::{DynamicImage, ImageOutputFormat};
 
 use crate::encoder::{Encode, OutputParams};
+use barcoders::error::Error;
 
 enum Symbology {
     Code128,
@@ -38,12 +39,13 @@ impl BarCode {
         }
     }
 
-    fn get_bytes(&self) -> Vec<u8> {
+    fn get_bytes(&self) -> Result<Vec<u8>, Error> {
         let data = &self.payload;
         match self.symbology {
             Symbology::Code128 => {
                 let data = "À".to_owned() + &data.to_uppercase();
-                Code128::new(data).unwrap().encode()
+                let code = Code128::new(data)?;
+                Ok(code.encode())
             }
             // Symbology::Code39 => Code39::new(data).unwrap().encode(),
             // Symbology::Code93 => Code93::new(data).unwrap().encode(),
@@ -53,8 +55,11 @@ impl BarCode {
 }
 
 impl Encode for BarCode {
-    fn encode(&self) -> DynamicImage {
-        let encoded = self.get_bytes();
+    fn encode(&self) -> Result<DynamicImage, String> {
+        let encoded = match self.get_bytes() {
+            Ok(encoded) => encoded,
+            Err(e) => return Err(e.to_string()),
+        };
         let buffer = Image::ImageBuffer {
             height: self.height,
             xdim: self.xdim,
@@ -62,8 +67,11 @@ impl Encode for BarCode {
             foreground: Color::black(),
             background: Color::white(),
         };
-        image::DynamicImage::ImageRgba8(buffer.generate_buffer(&encoded[..]).unwrap())
         // TODO: add quite zone
+        match buffer.generate_buffer(&encoded[..]) {
+            Ok(image_buffer) => Ok(image::DynamicImage::ImageRgba8(image_buffer)),
+            Err(error) => Err(error.to_string()),
+        }
     }
 
     fn payload(&self) -> &str {
@@ -85,7 +93,7 @@ mod tests {
     #[test]
     fn test_encode() {
         let barcode = BarCode::new("a".to_owned(), 5);
-        let actual = barcode.encode();
+        let actual = barcode.encode().unwrap();
         let expected = vec![
             0, 0, 0, 255, 0, 0, 0, 255, 255, 255, 255, 255, 0, 0, 0, 255, 255, 255, 255, 255, 255,
             255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0, 255, 255, 255, 255,
