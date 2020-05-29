@@ -8,6 +8,7 @@ use serde::{Deserialize, Serialize};
 use crate::barcode;
 use crate::encoder::Encode;
 use crate::qrcode;
+use std::panic;
 
 #[derive(Deserialize, Debug)]
 enum Encoding {
@@ -48,7 +49,17 @@ fn process_request(encoding: &Encoding, payload: String, height: u32) -> Box<dyn
 }
 
 pub fn index(info: web::Path<Info>, query: web::Query<Params>) -> HttpResponse {
-    let code = process_request(&info.encoding, query.payload.clone(), query.height);
+    let process_result = panic::catch_unwind(|| {
+        process_request(&info.encoding, query.payload.clone(), query.height)
+    });
+
+    if process_result.is_err() {
+        return HttpResponse::build(StatusCode::BAD_REQUEST)
+            .content_type("text/html; charset=utf-8")
+            .body(format!("Encoding {:?} is not supported", info.encoding));
+    }
+
+    let code = process_result.unwrap();
 
     match code.output() {
         Ok(data) => {
@@ -89,6 +100,24 @@ mod tests {
     #[test]
     fn barcode_bad() {
         let response = test_from_encoding(Encoding::BarCode, "тест");
+        assert_eq!(StatusCode::BAD_REQUEST, response.status());
+    }
+
+    #[test]
+    fn qrcode_ok() {
+        let response = test_from_encoding(Encoding::QRCode, "тест");
+        assert_eq!(StatusCode::OK, response.status());
+    }
+
+    #[test]
+    fn pdf417_not_supported() {
+        let response = test_from_encoding(Encoding::PDF417, "aaa");
+        assert_eq!(StatusCode::BAD_REQUEST, response.status());
+    }
+
+    #[test]
+    fn aztec_not_supported() {
+        let response = test_from_encoding(Encoding::Aztec, "aaa");
         assert_eq!(StatusCode::BAD_REQUEST, response.status());
     }
 }
