@@ -68,23 +68,7 @@ pub fn index(info: web::Path<Info>, query: web::Query<Params>) -> HttpResponse {
 
 #[cfg(test)]
 mod tests {
-    // use actix_web::dev::Payload;
-    // use actix_web::test;
-    // use actix_web::{FromRequest, HttpRequest};
-    // use futures_util::stream::StreamExt;
-    // use futures_util::stream::TryStreamExt;
-    // use futures::stream::Stream;
-
     use super::*;
-
-    // fn test_from_request(http_request: &HttpRequest) -> HttpResponse {
-    //     let mut payload = Payload::None;
-    //     let path: web::Path<Info> = web::Path::from_request(http_request, &mut payload).unwrap();
-    //     let query: web::Query<Params> =
-    //         web::Query::from_request(http_request, &mut payload).unwrap();
-    //
-    //     index(path, query)
-    // }
 
     fn test_from_encoding(encoding: Encoding, payload: &str) -> HttpResponse {
         let info = Info { encoding };
