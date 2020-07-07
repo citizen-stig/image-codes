@@ -1,7 +1,8 @@
 use core::fmt;
 
+use actix_files::NamedFile;
 use actix_web::http::StatusCode;
-use actix_web::{web, HttpResponse};
+use actix_web::{web, HttpResponse, Responder};
 use base64::encode;
 use serde::{Deserialize, Serialize};
 
@@ -48,7 +49,11 @@ fn process_request(encoding: &Encoding, payload: String, height: u32) -> Box<dyn
     }
 }
 
-pub fn index(info: web::Path<Info>, query: web::Query<Params>) -> HttpResponse {
+pub async fn index() -> Result<NamedFile, std::io::Error> {
+    Ok(NamedFile::open("static/index.html")?)
+}
+
+pub async fn get_code(info: web::Path<Info>, query: web::Query<Params>) -> impl Responder {
     let process_result = panic::catch_unwind(|| {
         process_request(&info.encoding, query.payload.clone(), query.height)
     });
@@ -88,7 +93,7 @@ mod tests {
         let query_string = format!("payload={:?}", payload);
         let query: web::Query<Params> = web::Query::from_query(&query_string).unwrap();
 
-        index(path, query)
+        get_code(path, query)
     }
 
     #[test]

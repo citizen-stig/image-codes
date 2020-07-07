@@ -5,13 +5,22 @@ mod encoder;
 mod qrcode;
 mod resources;
 
-fn main() {
+#[actix_rt::main]
+async fn main() -> std::io::Result<()> {
     // TODO: Params for bind address
+    // HttpServer::new(|| {
+    //     App::new().service(web::resource("/encode/{encoding}").to(resources::get_code))
+    // })
+    // .bind("127.0.0.1:8088")
+    // .unwrap()
+    // .run()
+    // .unwrap();
     HttpServer::new(|| {
-        App::new().service(web::resource("/encode/{encoding}").to(resources::index))
+        App::new()
+            .route("/", web::get().to(resources::index))
+            .route("/encode/{encoding}", web::get().to(resources::get_code))
     })
-    .bind("127.0.0.1:8088")
-    .unwrap()
+    .bind("127.0.0.1:8088")?
     .run()
-    .unwrap();
+    .await
 }
