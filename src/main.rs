@@ -4,17 +4,11 @@ mod barcode;
 mod encoder;
 mod qrcode;
 mod resources;
+mod response_format;
 
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
     // TODO: Params for bind address
-    // HttpServer::new(|| {
-    //     App::new().service(web::resource("/encode/{encoding}").to(resources::get_code))
-    // })
-    // .bind("127.0.0.1:8088")
-    // .unwrap()
-    // .run()
-    // .unwrap();
     HttpServer::new(|| {
         App::new()
             .route("/", web::get().to(resources::index))

@@ -1,4 +1,5 @@
 use core::fmt;
+use std::panic;
 
 use actix_files::NamedFile;
 use actix_web::http::StatusCode;
@@ -9,7 +10,7 @@ use serde::{Deserialize, Serialize};
 use crate::barcode;
 use crate::encoder::Encode;
 use crate::qrcode;
-use std::panic;
+use crate::response_format::{get_response_format, ResponseFormat};
 
 #[derive(Deserialize, Debug)]
 enum Encoding {
@@ -23,12 +24,6 @@ impl fmt::Display for Encoding {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{:?}", self)
     }
-}
-
-enum ResponseFormat {
-    HTML,
-    Image,
-    Json,
 }
 
 #[derive(Deserialize, Debug)]
@@ -67,26 +62,6 @@ fn process_request(encoding: &Encoding, payload: String, height: u32) -> Box<dyn
         Encoding::BarCode => Box::new(barcode::BarCode::new(payload, height)),
         Encoding::QRCode => Box::new(qrcode::QRCode::new(payload, height)),
         _ => panic!("Not supported yet!!!"),
-    }
-}
-
-fn get_response_format(req: HttpRequest) -> ResponseFormat {
-    let accept_header = req.headers().get("accept");
-    if accept_header.is_none() {
-        return ResponseFormat::HTML;
-    }
-    let accept_header = accept_header.unwrap();
-    match accept_header.to_str() {
-        Ok(accept_header) => {
-            if accept_header.starts_with("image") {
-                ResponseFormat::Image
-            } else if accept_header.starts_with("application/json") {
-                ResponseFormat::Json
-            } else {
-                ResponseFormat::HTML
-            }
-        }
-        Err(_e) => ResponseFormat::HTML,
     }
 }
 
@@ -141,44 +116,62 @@ pub async fn get_code(
 
 #[cfg(test)]
 mod tests {
+    use actix_web::test;
+
     use super::*;
 
-    fn test_from_encoding(encoding: Encoding, payload: &str) -> HttpResponse {
+    // #[actix_rt::test]
+    // async fn test_index_ok() {
+    //     let req = test::TestRequest::with_header("content-type", "text/plain").to_http_request();
+    //     let resp = index().await;
+    //     // assert_eq!(resp.unwrap().status(), http::StatusCode::OK);
+    // }
+
+    async fn test_from_encoding(
+        encoding: Encoding,
+        payload: &str,
+        req: HttpRequest,
+    ) -> HttpResponse {
         let info = Info { encoding };
         let path: web::Path<Info> = web::Path::from(info);
 
         let query_string = format!("payload={:?}", payload);
         let query: web::Query<Params> = web::Query::from_query(&query_string).unwrap();
-        get_code(path, query)
+        get_code(path, query, req).await
     }
 
-    #[test]
-    fn barcode_ok() {
-        let response = test_from_encoding(Encoding::BarCode, "aaa");
+    #[actix_rt::test]
+    async fn barcode_ok() {
+        let req = test::TestRequest::with_header("accept", "text/plain").to_http_request();
+        let response = test_from_encoding(Encoding::BarCode, "aaa", req).await;
         assert_eq!(StatusCode::OK, response.status());
     }
 
-    #[test]
-    fn barcode_bad() {
-        let response = test_from_encoding(Encoding::BarCode, "тест");
+    #[actix_rt::test]
+    async fn barcode_bad() {
+        let req = test::TestRequest::with_header("accept", "text/plain").to_http_request();
+        let response = test_from_encoding(Encoding::BarCode, "тест", req).await;
         assert_eq!(StatusCode::BAD_REQUEST, response.status());
     }
 
-    #[test]
-    fn qrcode_ok() {
-        let response = test_from_encoding(Encoding::QRCode, "тест");
+    #[actix_rt::test]
+    async fn qrcode_ok() {
+        let req = test::TestRequest::with_header("accept", "text/plain").to_http_request();
+        let response = test_from_encoding(Encoding::QRCode, "тест", req).await;
         assert_eq!(StatusCode::OK, response.status());
     }
 
-    #[test]
-    fn pdf417_not_supported() {
-        let response = test_from_encoding(Encoding::PDF417, "aaa");
+    #[actix_rt::test]
+    async fn pdf417_not_supported() {
+        let req = test::TestRequest::with_header("accept", "text/plain").to_http_request();
+        let response = test_from_encoding(Encoding::PDF417, "aaa", req).await;
         assert_eq!(StatusCode::BAD_REQUEST, response.status());
     }
 
-    #[test]
-    fn aztec_not_supported() {
-        let response = test_from_encoding(Encoding::Aztec, "aaa");
+    #[actix_rt::test]
+    async fn aztec_not_supported() {
+        let req = test::TestRequest::with_header("accept", "text/plain").to_http_request();
+        let response = test_from_encoding(Encoding::Aztec, "aaa", req).await;
         assert_eq!(StatusCode::BAD_REQUEST, response.status());
     }
 }
