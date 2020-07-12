@@ -1,25 +1,14 @@
+use barcoders::error::Error;
 use barcoders::generators::image::{Color, Image, Rotation};
-// use barcoders::sym::codabar::Codabar;
 use barcoders::sym::code128::Code128;
-// use barcoders::sym::code39::Code39;
-// use barcoders::sym::code93::Code93;
 use image::{DynamicImage, ImageOutputFormat};
 
 use crate::encoder::{Encode, OutputParams};
-use barcoders::error::Error;
-
-enum Symbology {
-    Code128,
-    // Code39,
-    // Code93,
-    // Codabar,
-}
 
 pub struct BarCode {
     height: u32,
     xdim: u32,
     payload: String,
-    symbology: Symbology,
 }
 
 impl BarCode {
@@ -35,22 +24,14 @@ impl BarCode {
             payload,
             height,
             xdim,
-            symbology: Symbology::Code128,
         }
     }
 
     fn get_bytes(&self) -> Result<Vec<u8>, Error> {
         let data = &self.payload;
-        match self.symbology {
-            Symbology::Code128 => {
-                let data = "À".to_owned() + &data.to_uppercase();
-                let code = Code128::new(data)?;
-                Ok(code.encode())
-            }
-            // Symbology::Code39 => Code39::new(data).unwrap().encode(),
-            // Symbology::Code93 => Code93::new(data).unwrap().encode(),
-            // Symbology::Codabar => Codabar::new(data).unwrap().encode(),
-        }
+        let data = "À".to_owned() + &data.to_uppercase();
+        let code = Code128::new(data)?;
+        Ok(code.encode())
     }
 }
 

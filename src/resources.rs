@@ -3,7 +3,7 @@ use std::panic;
 
 use actix_files::NamedFile;
 use actix_web::http::StatusCode;
-use actix_web::{web, HttpRequest, HttpResponse, Responder};
+use actix_web::{web, HttpRequest, HttpResponse};
 use base64::encode;
 use serde::{Deserialize, Serialize};
 
@@ -79,7 +79,7 @@ fn get_successful_output(data: Vec<u8>, format: ResponseFormat) -> HttpResponse 
                     result
                 ))
         }
-        ResponseFormat::Json => {
+        ResponseFormat::JSON => {
             HttpResponse::build(StatusCode::OK).json(JsonResponse::new_from_data(data))
         }
     }
