@@ -5,7 +5,23 @@
     <title>Welcome to Image Codes</title>
 </head>
 <body>
-<h1>Hello and try it</h1>
-<p>Text</p>
+<h1>Try</h1>
+<div>
+    <input name="payload" id="payload" type="text"/>
+    <button id="try-button">Try!</button>
+    <div id="result"></div>
+
+</div>
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+        integrity="sha256-4+XzXVhsDmqanXGHaHvgh1gMQKX40OUvDEBTu8JcmNs=" crossorigin="anonymous"></script>
+<script type="text/javascript">
+    $("#try-button").click(function() {
+        var payload = $('#payload').val();
+        let url = "/encode/BarCode?payload=" + payload;
+        let link = '<a href="' + url + '" target="_blank">Link</a>';
+        let image = '<img src="' + url + '"/>';
+        $('#result').html('<div>' + link + '</div><div>' + image + '</div>');
+    });
+</script>
 </body>
 </html>
