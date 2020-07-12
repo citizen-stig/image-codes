@@ -1,7 +1,7 @@
 use image::{DynamicImage, ImageOutputFormat, Luma};
 use qrcode::QrCode;
 
-use crate::encoder::{Encode, OutputParams};
+use crate::encoders::encoder::{Encode, OutputParams};
 
 pub struct QRCode {
     height: u32,

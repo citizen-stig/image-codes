@@ -3,7 +3,7 @@ use barcoders::generators::image::{Color, Image, Rotation};
 use barcoders::sym::code128::Code128;
 use image::{DynamicImage, ImageOutputFormat};
 
-use crate::encoder::{Encode, OutputParams};
+use crate::encoders::encoder::{Encode, OutputParams};
 
 pub struct BarCode {
     height: u32,

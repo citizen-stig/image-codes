@@ -7,9 +7,9 @@ use actix_web::{web, HttpRequest, HttpResponse};
 use base64::encode;
 use serde::{Deserialize, Serialize};
 
-use crate::barcode;
-use crate::encoder::Encode;
-use crate::qrcode;
+use crate::encoders::barcode;
+use crate::encoders::encoder::Encode;
+use crate::encoders::qrcode;
 use crate::response_format::{get_response_format, ResponseFormat};
 
 #[derive(Deserialize, Debug)]

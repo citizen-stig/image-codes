@@ -1,8 +1,6 @@
 use actix_web::{web, App, HttpServer};
 
-mod barcode;
-mod encoder;
-mod qrcode;
+mod encoders;
 mod resources;
 mod response_format;
 
