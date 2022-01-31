@@ -50,7 +50,7 @@ impl Encode for BarCode {
             background: Color::white(),
         };
 
-        // TODO: add quite zone
+        // TODO: add quite zone.
         match buffer.generate_buffer(&encoded[..]) {
             Ok(image_buffer) => Ok(image::DynamicImage::ImageRgba8(image_buffer)),
             Err(error) => Err(error.to_string()),
