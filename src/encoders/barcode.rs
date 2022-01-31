@@ -1,7 +1,8 @@
 use barcoders::error::Error;
 use barcoders::generators::image::{Color, Image, Rotation};
 use barcoders::sym::code128::Code128;
-use image::{DynamicImage, ImageOutputFormat};
+use image::DynamicImage::ImageRgba8;
+use image::{DynamicImage, ImageOutputFormat, RgbaImage};
 
 use crate::encoders::encoder::{Encode, OutputParams};
 
@@ -48,6 +49,7 @@ impl Encode for BarCode {
             foreground: Color::black(),
             background: Color::white(),
         };
+
         // TODO: add quite zone
         match buffer.generate_buffer(&encoded[..]) {
             Ok(image_buffer) => Ok(image::DynamicImage::ImageRgba8(image_buffer)),
@@ -61,7 +63,7 @@ impl Encode for BarCode {
 
     fn get_params(&self) -> OutputParams {
         OutputParams {
-            format: ImageOutputFormat::PNG,
+            format: ImageOutputFormat::Png,
             append_text: false,
         }
     }
