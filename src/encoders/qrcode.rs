@@ -19,9 +19,9 @@ impl Encode for QRCode {
         let code = QrCode::new(self.payload.as_bytes());
         match code {
             Ok(code) => {
-                let mut renderer = code.render::<Luma<u8>>();
-                renderer.min_dimensions(self.height, self.height);
-                Ok(image::DynamicImage::ImageLuma8(renderer.build()))
+                // let mut renderer = code.render::<Luma<u8>>();
+                let image = code.render::<Luma<u8>>().build();
+                Ok(image::DynamicImage::ImageLuma8(image))
             }
             Err(error) => Err(error.to_string()),
         }
